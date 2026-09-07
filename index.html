@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Systems Hub | Next-Gen 3D Web & AI Architecture</title>
+  
+  <!-- Spline 3D Web Engine & FontAwesome Icons -->
+  <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.72/build/spline-viewer.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --bg-dark: #07070b;
+      --card-bg: rgba(255, 255, 255, 0.03);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary-accent: #6366f1;
+      --secondary-accent: #a855f7;
+      --cyan-glow: #06b6d4;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      overflow-x: hidden;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* Ambient Cursor Glow Tracker */
+    .cursor-glow {
+      position: fixed;
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.05), transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: 999;
+      transition: width 0.3s, height 0.3s;
+    }
+
+    /* Fixed Background 3D Viewport */
+    .canvas-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      pointer-events: auto;
+      opacity: 0.85;
+    }
+
+    spline-viewer {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Interactive UI Layer */
+    .content-wrapper {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+    }
+
+    /* Floating Glassmorphism Navbar */
+    header {
+      position: fixed;
+      top: 20px;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      z-index: 100;
+      padding: 0 20px;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 1200px;
+      padding: 14px 28px;
+      background: rgba(13, 13, 22, 0.65);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      border-radius: 50px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .logo {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      background: linear-gradient(90deg, #60a5fa, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: #ffffff;
+    }
+
+    /* Global Layout Section */
+    section {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 120px 8% 60px;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    /* Hero Section */
+    .hero {
+      position: relative;
+      pointer-events: none;
+      max-width: 780px;
+    }
+
+    .hero * {
+      pointer-events: auto;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #a5b4fc;
+      border-radius: 20px;
+      margin-bottom: 24px;
+    }
+
+    .badge span {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #10b981;
+    }
+
+    h1 {
+      font-size: clamp(2.8rem, 5.5vw, 4.8rem);
+      line-height: 1.08;
+      font-weight: 900;
+      margin-bottom: 24px;
+      letter-spacing: -1.5px;
+    }
+
+    h1 span {
+      background: linear-gradient(135deg, #ffffff 30%, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-p {
+      font-size: 1.15rem;
+      line-height: 1.6;
+      color: var(--text-muted);
+      margin-bottom: 35px;
+      max-width: 600px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 50px;
+    }
+
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 34px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
+      border: none;
+      border-radius: 30px;
+      text-decoration: none;
+      box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
+    }
+
+    .cta-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 40px rgba(168, 85, 247, 0.6);
+    }
+
+    .secondary-btn {
+      padding: 14px 28px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      border-radius: 30px;
+      text-decoration: none;
+      backdrop-filter: blur(10px);
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .secondary-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .stats-bar {
+      display: flex;
+      gap: 40px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 25px;
+    }
+
+    .stat-box h3 {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .stat-box p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Services Section (3D Tilt Cards) */
+    .section-title-wrap {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .section-subtitle {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--cyan-glow);
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .section-title {
+      font-size: 2.6rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 25px;
+    }
+
+    .tilt-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 35px 30px;
+      position: relative;
+      overflow: hidden;
+      transform-style: preserve-3d;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .tilt-card:hover {
+      border-color: rgba(99, 102, 241, 0.4);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-icon {
+      width: 55px;
+      height: 55px;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(6, 182, 212, 0.15));
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      color: #818cf8;
+      margin-bottom: 24px;
+    }
+
+    .tilt-card h3 {
+      font-size: 1.35rem;
+      margin-bottom: 14px;
+      font-weight: 700;
+    }
+
+    .tilt-card p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Pricing Section */
+    .pricing-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(25px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 40px 32px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .pricing-card.featured {
+      background: linear-gradient(180deg, rgba(99, 102, 241, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+      border-color: rgba(99, 102, 241, 0.5);
+    }
+
+    .plan-badge {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(90deg, #6366f1, #a855f7);
+      padding: 4px 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 12px;
+      text-transform: uppercase;
+    }
+
+    .price-num {
+      font-size: 2.8rem;
+      font-weight: 800;
+      margin: 20px 0 10px;
+      color: #fff;
+    }
+
+    .price-features {
+      list-style: none;
+      margin: 24px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .price-features li {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .price-features li i {
+      color: #10b981;
+      font-size: 0.85rem;
+    }
+
+    /* Contact Section */
+    .contact-container {
+      background: var(--card-bg);
+      backdrop-filter: blur(25px);
+      border: 1px solid var(--card-border);
+      border-radius: 30px;
+      padding: 50px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 50px;
+    }
+
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 14px 18px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      color: #fff;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus {
+      border-color: var(--primary-accent);
+    }
+
+    textarea.form-input {
+      resize: vertical;
+      min-height: 110px;
+    }
+
+    /* Global Footer */
+    footer {
+      border-top: 1px solid var(--card-border);
+      padding: 30px 8%;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      backdrop-filter: blur(10px);
+    }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .contact-container { grid-template-columns: 1fr; padding: 30px; }
+      .stats-bar { flex-wrap: wrap; gap: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Cursor Light Tracking -->
+  <div class="cursor-glow" id="cursorGlow"></div>
+
+  <!-- Interactive 3D Canvas Reacting to Mouse Movement -->
+  <div class="canvas-container">
+    <spline-viewer url="https://prod.spline.design/6Wq1Q7YGyM-iab9i/scene.splinecode"></spline-viewer>
+  </div>
+
+  <div class="content-wrapper">
+    <!-- Navigation Bar -->
+    <header>
+      <nav>
+        <div class="logo">
+          <i class="fa-solid fa-cube"></i> DIGITAL SYSTEMS HUB
+        </div>
+        <ul class="nav-links">
+          <li><a href="#services">Services</a></li>
+          <li><a href="#solutions">Solutions</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+        <a href="#contact" class="cta-btn" style="padding: 8px 22px; font-size: 0.85rem;">Get Started</a>
+      </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+      <div class="badge">
+        <span></span> Next-Gen AI & 3D Web Architecture
+      </div>
+      <h1>Powering Brands with <span>Hyper-Immersive 3D.</span></h1>
+      <p class="hero-p">We don't build generic websites. We engineer ultra-fast, interactive 3D ecosystems and automated AI agents engineered to convert and scale your digital presence.</p>
+      
+      <div class="btn-group">
+        <a href="#contact" class="cta-btn">Book Consultation <i class="fa-solid fa-arrow-right"></i></a>
+        <a href="#services" class="secondary-btn">Explore Ecosystem</a>
+      </div>
+
+      <div class="stats-bar">
+        <div class="stat-box">
+          <h3>100x</h3>
+          <p>Higher Engagement</p>
+        </div>
+        <div class="stat-box">
+          <h3>60 FPS</h3>
+          <p>Fluid Animation</p>
+        </div>
+        <div class="stat-box">
+          <h3>99.9%</h3>
+          <p>Uptime Architecture</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Services Section with 3D Tilt Cards -->
+    <section id="services">
+      <div class="section-title-wrap">
+        <div class="section-subtitle">Core Capabilities</div>
+        <h2 class="section-title">Engineered For The Future</h2>
+      </div>
+
+      <div class="grid-3">
+        <div class="tilt-card" data-tilt>
+          <div class="card-icon"><i class="fa-solid fa-cubes"></i></div>
+          <h3>3D Interactive Web</h3>
+          <p>Spatial 3D models responsive to cursor dynamics, smooth scroll kinematics, and modern frosted glass styling that captivates audiences.</p>
+        </div>
+
+        <div class="tilt-card" data-tilt>
+          <div class="card-icon"><i class="fa-solid fa-robot"></i></div>
+          <h3>AI Automation & Agents</h3>
+          <p>Autonomous AI workflows, custom-trained LLM customer agents, and end-to-end CRM integrations designed to eliminate human latency.</p>
+        </div>
+
+        <div class="tilt-card" data-tilt>
+          <div class="card-icon"><i class="fa-solid fa-bolt"></i></div>
+          <h3>Enterprise Web Systems</h3>
+          <p>Ultra-secure, scalable cloud infrastructure and headless CMS implementations built with zero performance bottlenecks.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing">
+      <div class="section-title-wrap">
+        <div class="section-subtitle">Transparent Tiers</div>
+        <h2 class="section-title">Scalable Solutions For Any Stage</h2>
+      </div>
+
+      <div class="grid-3">
+        <div class="pricing-card">
+          <h3>Starter 3D</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Ideal for high-impact launches</p>
+          <div class="price-num">$1,499</div>
+          <ul class="price-features">
+            <li><i class="fa-solid fa-check"></i> Custom 3D Interactive Hero Experience</li>
+            <li><i class="fa-solid fa-check"></i> High-Speed Responsive Architecture</li>
+            <li><i class="fa-solid fa-check"></i> Automated Cloud Deployment Setup</li>
+          </ul>
+          <a href="#contact" class="secondary-btn" style="text-align: center; margin-top: auto;">Select Tier</a>
+        </div>
+
+        <div class="pricing-card featured">
+          <div class="plan-badge">Most Popular</div>
+          <h3>Pro Animated Hub</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Tailored for modern high-growth brands</p>
+          <div class="price-num">$2,999</div>
+          <ul class="price-features">
+            <li><i class="fa-solid fa-check"></i> Full Multi-Scene 3D Physics & Canvas</li>
+            <li><i class="fa-solid fa-check"></i> Automated AI Lead Routing System</li>
+            <li><i class="fa-solid fa-check"></i> 3D Perspective Card Dynamics</li>
+            <li><i class="fa-solid fa-check"></i> Advanced SEO & Latency Optimization</li>
+          </ul>
+          <a href="#contact" class="cta-btn" style="text-align: center; justify-content: center; margin-top: auto;">Deploy Now</a>
+        </div>
+
+        <div class="pricing-card">
+          <h3>Enterprise AI</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Bespoke architecture & custom pipelines</p>
+          <div class="price-num">Custom</div>
+          <ul class="price-features">
+            <li><i class="fa-solid fa-check"></i> Bespoke Three.js / Spline Custom Shaders</li>
+            <li><i class="fa-solid fa-check"></i> Custom Autonomous AI Agent Pipelines</li>
+            <li><i class="fa-solid fa-check"></i> 24/7 Priority SLA & Dedicated Support</li>
+          </ul>
+          <a href="#contact" class="secondary-btn" style="text-align: center; margin-top: auto;">Contact Sales</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+      <div class="contact-container">
+        <div>
+          <div class="section-subtitle">Get In Touch</div>
+          <h2 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 20px;">Ready to build something extraordinary?</h2>
+          <p style="color: var(--text-muted); line-height: 1.6; margin-bottom: 30px;">Share your technical requirements or product roadmap. Our engineers respond within 24 hours with an actionable architecture proposal.</p>
+          <div style="display: flex; flex-direction: column; gap: 15px; color: var(--text-muted);">
+            <div><i class="fa-solid fa-envelope" style="color: var(--primary-accent); margin-right: 10px;"></i> hello@digitalsystemshub.com</div>
+            <div><i class="fa-solid fa-globe" style="color: var(--cyan-glow); margin-right: 10px;"></i> Worldwide Delivery</div>
+          </div>
+        </div>
+
+        <form class="contact-form" onsubmit="event.preventDefault(); alert('Message dispatched! Our team will connect shortly.');">
+          <input type="text" class="form-input" placeholder="Your Name" required>
+          <input type="email" class="form-input" placeholder="Work Email" required>
+          <textarea class="form-input" placeholder="Describe your vision or product requirements..."></textarea>
+          <button type="submit" class="cta-btn" style="justify-content: center;">Send Message <i class="fa-solid fa-paper-plane"></i></button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      © 2026 Digital Systems Hub. All rights reserved. Next-Gen 3D Systems & Interactive Web Architecture.
+    </footer>
+  </div>
+
+  <!-- Cursor Tracking & Interactive Tilt Script -->
+  <script>
+    // 1. Mouse Radial Glow Coordinates
+    const glow = document.getElementById('cursorGlow');
+    window.addEventListener('mousemove', (e) => {
+      glow.style.left = e.clientX + 'px';
+      glow.style.top = e.clientY + 'px';
+    });
+
+    // 2. Interactive 3D Perspective Tilt for Dynamic Cards
+    const cards = document.querySelectorAll('[data-tilt]');
+    cards.forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        card.style.transform = `perspective(1000px) rotateX(${-y / 15}deg) rotateY(${x / 15}deg) translateY(-5px)`;
+      });
+
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)';
+      });
+    });
+  </script>
+</body>
+</html>
